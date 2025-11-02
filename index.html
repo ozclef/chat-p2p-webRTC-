@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chat P2P Efímero — Inicio</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Chat P2P Efímero</h1>
+    <p class="lead">Mensajería 1:1 cifrada P2P, efímera y local. Lee la privacidad antes de usar.</p>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <label>Tu nombre: <input id="nick" placeholder="Ej: Juan" /></label>
+      <label>Auto-borrar (seg): <input id="autoDelete" type="number" min="0" value="10" /></label>
+      <label><input id="consentStore" type="checkbox" /> Guardar preferencias/contactos (local)</label>
+      <div class="row">
+        <button id="savePrefs">Guardar preferencias</button>
+        <button id="clearApp">Borrar todo (solo app)</button>
+      </div>
+      <p class="small">Si no aceptas almacenar, la sesión será sólo en memoria.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Contactos locales</h2>
+      <div class="row">
+        <input id="contactName" placeholder="Nombre contacto"/>
+        <input id="contactSerial" placeholder="Serial (codigo corto)"/>
+        <button id="addContact">Añadir contacto</button>
+      </div>
+      <div class="row">
+        <button id="exportContacts">Exportar contactos</button>
+        <input id="importContacts" type="file" accept=".json" />
+        <button id="importBtn">Importar contactos</button>
+      </div>
+      <div id="contactsList" class="list"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Señalización (Oferta/Respuesta)</h2>
+      <div class="row">
+        <button id="createOffer">Crear Oferta (soy A)</button>
+        <button id="prepareAnswer">Prepararme para Responder (soy B)</button>
+        <button id="applySignal">Aplicar señal pegada</button>
+        <button id="downloadSignal">Descargar señal</button>
+      </div>
+      <div class="signal-area">
+        <textarea id="signalArea" placeholder="Aquí aparecerá la oferta/respuesta y candidatos"></textarea>
+        <div class="qrbox">
+          <div id="qrcode"></div>
+          <div class="meta">QR de señal</div>
+        </div>
+      </div>
+      <div class="row">
+        <div id="reader" class="reader"></div>
+        <input id="manualSerial" placeholder="Pegar serial o JSON"/>
+        <button id="applyManual">Aplicar</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Chat efímero</h2>
+      <div id="log" class="log"></div>
+      <div class="row">
+        <input id="msg" placeholder="Escribe tu mensaje..." />
+        <button id="send">Enviar</button>
+      </div>
+      <p class="meta small">Aviso: la app borra localmente mensajes según el temporizador, pero no puede impedir capturas de pantalla.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>Proyecto P2P efímero • No guarda mensajes en servidores • Lee <a href="PRIVACY.md" target="_blank">Privacidad</a></small>
+  </footer>
+
+  <div id="consentBanner" class="consent">
+    <div>
+      <strong>Aviso de privacidad y cookies</strong>
+      <p>Este chat usa conexión directa entre navegadores. No guardamos mensajes en servidores. ¿Aceptas que guardemos preferencias y contactos en tu dispositivo local?</p>
+      <div class="row">
+        <button id="acceptCookies">Aceptar (guardar)</button>
+        <button id="rejectCookies">Rechazar (no guardar)</button>
+      </div>
+    </div>
+  </div>
+
+<script src="script.js"></script>
+</body>
+</html>

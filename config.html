@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Configuración — Chat P2P Efímero</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <section class="panel">
+      <h1>Cómo funciona (resumen)</h1>
+      <ol>
+        <li>Este chat crea una conexión P2P (WebRTC) entre dos navegadores.</li>
+        <li>Intercambia señales (Oferta / Respuesta) que tú compartes por QR o copy/paste.</li>
+        <li>Los mensajes viajan cifrados directamente entre dispositivos y no se suben a servidores.</li>
+        <li>Puedes guardar preferencias y contactos en tu dispositivo si aceptas.</li>
+      </ol>
+      <h2>Consejos de privacidad</h2>
+      <ul>
+        <li>Para máxima privacidad, intercambia señales cara a cara (QR) y usa auto-borrado.</li>
+        <li>La app no puede evitar capturas de pantalla; informa a tu interlocutor.</li>
+        <li>Si borras el caché o las cookies, los contactos y preferencias guardadas se perderán.</li>
+      </ul>
+      <h2>Instrucciones rápidas</h2>
+      <p>Genera Oferta → comparte QR/archivo → la otra persona aplica y genera Respuesta → devuélvela → cuando el canal abra, chateen.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Archivo de configuración (ejemplo)</h2>
+      <pre><code id="cfgExample"></code></pre>
+      <button id="downloadCfg">Descargar config.json</button>
+    </section>
+  </main>
+<script>
+const example = {
+  "usuario": "alias_ejemplo",
+  "contactos": [],
+  "mensajesLocales": [],
+  "configuraciones": {
+    "tema": "claro",
+    "borrarAlCerrar": true,
+    "autoBorrarSegundos": 10
+  }
+};
+document.getElementById('cfgExample').textContent = JSON.stringify(example, null, 2);
+document.getElementById('downloadCfg').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(example, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='config.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>

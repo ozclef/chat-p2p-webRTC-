@@ -1,0 +1,11 @@
+{
+  "usuario": "",
+  "contactos": [],
+  "mensajesLocales": [],
+  "configuraciones": {
+    "tema": "claro",
+    "borrarAlCerrar": true,
+    "autoBorrarSegundos": 10,
+    "guardarContactos": false
+  }
+}
