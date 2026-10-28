@@ -1,6 +1,14 @@
 # Chat P2P Efímero — Proyecto base
 Pequeña aplicación web para mensajería 1:1 P2P (WebRTC) efímera y local. No guarda mensajes en servidores por defecto.
 
+```
+este ya no 
+https://oz-ice-p2p.vercel.app
+```
+
+https://chat-webrtc-osclef.netlify.app/
+
+
 ## Contenido
 - index.html — interfaz principal (chat, contactos, señal QR)
 - config.html — explicación y ejemplo de config.json
