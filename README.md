@@ -170,4 +170,416 @@ Y sí: puedes fijar los repositorios públicos más representativos en tu perfil
 
 
  chats WebSocket y WebRTC. 
+
  
+
+
+
+
+<!---->
+
+Perfecto.
+Vamos a construir la base sólida, con lo mínimo indispensable pero funcional:
+login por Google, chat en tiempo real y estructura lista para crecer.
+
+---
+
+### ⚙️ Estructura de carpetas
+
+```
+tu-proyecto/
+│
+├── public/
+│   ├── index.html
+│   └── main.js
+│
+├── server.js
+├── package.json
+└── .env
+```
+
+---
+
+### 📦 1. `package.json`
+
+```json
+{
+  "name": "bious-huachu-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "express-session": "^1.17.3",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "socket.io": "^4.7.2"
+  }
+}
+```
+
+Instalas todo con:
+
+```bash
+npm install
+```
+
+---
+
+### 🔐 2. `.env`
+
+```env
+GOOGLE_CLIENT_ID=TU_CLIENT_ID
+GOOGLE_CLIENT_SECRET=TU_CLIENT_SECRET
+SESSION_SECRET=algo_largo_y_unico
+PORT=3000
+```
+
+(Tus credenciales las generas en [Google Cloud Console → APIs → OAuth 2.0 Credentials](https://console.cloud.google.com/apis/credentials))
+En “Authorized redirect URI” pon:
+
+```
+http://localhost:3000/auth/google/callback
+```
+
+---
+
+### 🧠 3. `server.js`
+
+```js
+import express from "express";
+import session from "express-session";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import dotenv from "dotenv";
+import { Server } from "socket.io";
+import http from "http";
+
+dotenv.config();
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.static("public"));
+app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// --- Passport config ---
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "/auth/google/callback"
+}, (accessToken, refreshToken, profile, done) => {
+  return done(null, profile);
+}));
+
+// --- Rutas de login ---
+app.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    res.redirect("/"); // regresa al index ya logueado
+  }
+);
+
+// --- API simple ---
+app.get("/user", (req, res) => {
+  if (req.user) res.json(req.user);
+  else res.json({ user: null });
+});
+
+// --- WebSockets (chat) ---
+io.on("connection", (socket) => {
+  console.log("Nuevo usuario conectado");
+
+  socket.on("message", (msg) => {
+    io.emit("message", msg); // envía a todos
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Usuario desconectado");
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+```
+
+---
+
+### 🌐 4. `public/index.html`
+
+```html
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bious Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Bious Chat</h2>
+
+  <button id="login">Iniciar sesión con Google</button>
+  <div id="user"></div>
+
+  <div id="chat" style="display:none;">
+    <div id="messages"></div>
+    <input id="msg" placeholder="Escribe un mensaje..." />
+    <button id="send">Enviar</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
+
+``` 
+
+
+
+---
+
+###  💬 5. `public/main.js`
+
+```js
+const socket = io();
+const loginBtn = document.getElementById("login");
+const userDiv = document.getElementById("user");
+const chatDiv = document.getElementById("chat");
+const sendBtn = document.getElementById("send");
+
+loginBtn.onclick = () => {
+  window.location.href = "/auth/google";
+};
+
+async function checkUser() {
+  const res = await fetch("/user");
+  const data = await res.json();
+
+  if (data.user) {
+    loginBtn.style.display = "none";
+    userDiv.textContent = `Hola, ${data.user.displayName}`;
+    chatDiv.style.display = "block";
+  }
+}
+
+sendBtn.onclick = () => {
+  const msg = document.getElementById("msg").value.trim();
+  if (msg) {
+    socket.emit("message", msg);
+    document.getElementById("msg").value = "";
+  }
+};
+
+socket.on("message", (msg) => {
+  const messagesDiv = document.getElementById("messages");
+  const p = document.createElement("p");
+  p.textContent = msg;
+  messagesDiv.appendChild(p);
+});
+
+checkUser();
+```
+
+---
+
+### 🚀 Cómo probar
+
+1. `npm install`
+2. `npm start`
+3. Abre [http://localhost:3000](http://localhost:3000)
+4. Da clic en “Iniciar sesión con Google”.
+5. Una vez logueado, podrás chatear con cualquiera conectado.
+
+---
+
+Cuando lo tengas corriendo y funcione el login, seguimos con:
+
+* Guardar mensajes y usuarios en base de datos (SQLite o Supabase).
+* Conectar esto a tus proyectos **Huachu Pets** y **Bious Market**.
+* Después armamos el README técnico y el diagrama del sistema.
+
+¿Quieres que el siguiente paso sea agregar base de datos (SQLite o Supabase)?
+
+```
+```
+Resumen rápido (lo esencial)
+Prioriza autenticación → datos → realtime (sockets/webrtc) → UI.
+
+Usa Supabase Auth (si ya tienes Supabase) o NextAuth.js (si quieres control y proveedores fáciles) para Google / Microsoft. Ambos soportan el flujo OAuth y redirecciones con estado. 
+Supabase
++1
+
+Guarda en el redirect/state la sala o acción que quieres (para “mismo link inicia sesión y manda mensaje”) y al volver del OAuth retomas la acción. El parámetro state protege contra CSRF y sirve para mantener el estado. 
+Stack Overflow
++1
+
+Para chats / video: usa Socket.IO para signaling y WebRTC para P2P (SDP + ICE). Socket.io solo hace señalización; luego el audio/video va directo peer-to-peer. 
+GitHub
++1
+
+Checklist práctica (qué hacer ya, por orden)
+Auth (48–72h)
+
+Decide: Supabase Auth (rápido si ya tienes Supabase) o NextAuth.js (flexible en Next).
+
+Crea credenciales OAuth en Google Cloud y Microsoft/Azure, pon client_id/client_secret en variables de Vercel. 
+Supabase
++1
+
+Habilita callback URI en cada proveedor: https://tu-dominio.com/api/auth/callback/google (o la ruta que uses).
+
+Integrar el "mismo link" que inicia sesión y manda mensaje
+
+El link lleva ?room=ID&msg=... o un state que codifiques. Cuando el usuario no está autenticado rediriges a login con callbackUrl apuntando a /chat?room=ID&msg=.... Al volver, la app lee esos parámetros y envía el mensaje automáticamente. (Ejemplo abajo). 
+Auth0
++1
+
+Señalización & Chat (48–96h)
+
+Monta un servidor pequeño en Node con Socket.IO para intercambiar ofertas/answers/ICE. Cuando el cliente se autentique, conecta socket con token (ver RLS o JWT). 
+GitHub
++1
+
+Base de datos y reputación
+
+Normaliza tablas: users, productos, chats, messages, rooms. Habilita RLS en Supabase si lo usas.
+
+UI + despliegue
+
+Haz rutas limpias /p/:producto, /chat/:room. Usa Vercel env vars NEXTAUTH_URL/NEXTAUTH_SECRET si aplica. 
+NextAuth
++1
+
+Código mínimo: flujo “mismo link” (Next.js + NextAuth)
+(Pega esto en tu proyecto Next.js; es ejemplo para entender la idea: inicia sesión con Google y vuelve a /chat?room=ID&msg=hola y el cliente enviará el mensaje).
+
+1) API NextAuth (pages/api/auth/[...nextauth].js)
+
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import AzureADProvider from "next-auth/providers/azure-ad";
+
+export default NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET
+    }),
+    AzureADProvider({
+      clientId: process.env.AZURE_ID,
+      clientSecret: process.env.AZURE_SECRET,
+      tenantId: process.env.AZURE_TENANT_ID
+    })
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async jwt({ token, user }) { return token; },
+    async session({ session, token }) { return session; }
+  }
+});
+(Deploy: configura CLIENT_ID/SECRET en Vercel). 
+NextAuth
++1
+
+2) Cliente — botón que genera el link "inicia y manda"
+
+
+```jsx
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+
+export default function MagicLinkButton({ room, message }) {
+  const router = useRouter();
+
+  const handle = async () => {
+    const callback = `/chat?room=${encodeURIComponent(room)}&msg=${encodeURIComponent(message)}`;
+    // lanza el proceso de login; cuando termine, NextAuth redirige al callback
+    await signIn("google", { callbackUrl: callback });
+  };
+
+  return <button onClick={handle}>Enviar mensaje y entrar</button>;
+}
+NextAuth admite callbackUrl para redirigir luego del OAuth. 
+NextAuth
+
+3) Página /chat que lee query y manda mensaje al entrar
+
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import io from "socket.io-client";
+
+let socket;
+
+export default function ChatPage() {
+  const router = useRouter();
+  const { room, msg } = router.query;
+
+  useEffect(() => {
+    if (!room) return;
+    // Conectar socket (añade auth si quieres)
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, { auth: { token: /* tu JWT */ }});
+    socket.emit("join", room);
+
+    if (msg) {
+      socket.emit("message", { room, text: msg });
+      // opcional: quitar msg de la URL para que no se reenvíe si recargas
+      router.replace(`/chat?room=${room}`, undefined, { shallow: true });
+    }
+
+    return () => socket?.disconnect();
+  }, [room, msg]);
+
+  return <div>Chat room: {room} {/* render mensajes */}</div>;
+}
+
+```
+
+Esta es la idea: el callback lleva la intención (room+msg) y la página la materializa.
+
+Código mínimo: signaling server (Node + Socket.IO)
+
+
+```js
+// server.js
+import http from "http";
+import { Server } from "socket.io";
+
+const server = http.createServer();
+const io = new Server(server, { cors: { origin: "*" } });
+
+io.on("connection", (socket) => {
+  socket.on("join", (room) => {
+    socket.join(room);
+  });
+
+  socket.on("signal", ({ to, data }) => {
+    // enviar SDP/ICE al peer
+    io.to(to).emit("signal", { from: socket.id, data });
+  });
+
+  socket.on("message", ({ room, text }) => {
+    io.to(room).emit("message", { from: socket.id, text, ts: Date.now() });
+  });
+});
+
+server.listen(3001);
+```
