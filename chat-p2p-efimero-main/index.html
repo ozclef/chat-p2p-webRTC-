@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Free Chat - Backend Panel  OS-CLEF  </title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; background: #0b0b10; color: #fff; padding: 20px; }
+    h1 { color: #ffb300; }
+    #messages { max-height: 60vh; overflow-y: auto; background: #1a1a1f; padding: 10px; border-radius: 10px; }
+    .msg { margin: 6px 0; padding: 8px; border-radius: 8px; word-wrap: break-word; }
+    .mine { background: #ffb30033; text-align: right; }
+    .theirs { background: #333; text-align: left; }
+    input, button { padding: 8px; border-radius: 6px; border: none; }
+    input { width: 70%; }
+    button { background: #ffb300; cursor: pointer; }
+    #status { font-size: 0.9em; color: #999; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>
+    💬 - Chat  -  US -   os clef 
+  </h1>
+  <p>chat por id - No server -</p>
+  <div><strong>Tu ID:</strong> <span id="myId"></span></div>
+  <div id="status">Estado: desconectado...</div>
+
+  <div>
+    <label>Enviar a ID:</label>
+    <input type="text" id="receiver" placeholder="ID del otro dispositivo">
+  </div>
+  <div id="messages"></div>
+  <div style="margin-top:10px;">
+    <input type="text" id="msg" placeholder="Escribe un mensaje...">
+    <button id="send">Enviar</button>
+  </div>
+
+
+
+  <footer>
+    <h1>💬 BIO - US Chat </h1>
+  <p>Bio Intelligence One  Universe Soul----- v0.0.03 - by ozclef</p>
+    <p></p>
+  </footer>
+
+  <script src="https://chat-us-omega.vercel.app/js/app.js"></script>
+</body>
+</html>
