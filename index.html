@@ -1,99 +1,216 @@
+
+
+
+
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Chat P2P Efímero — Inicio</title>
-  
-<link rel="stylesheet" href="https://ozclef.github.io/ia-gpt-os/dist/css/style.css">
-<!--link rel="stylesheet" href="styles.css" ---->
-  <link rel="stylesheet" href="styles.css">
-  
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-  
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title> Us - Chat v0.01 Realtime</title>
+<style>
+  /* layout sencillo: header / aside / main */
+  body {font-family:system-ui,Segoe UI,Roboto; margin:0; height:100vh; display:grid;
+        grid-template-rows:60px 1fr; }
+  header{background:#101010;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+  .app{display:grid;grid-template-columns:260px 1fr; gap:12px; padding:12px; height:calc(100vh - 84px)}
+  aside{background:#0f1724;color:#e6eef8;padding:12px;border-radius:8px;overflow:auto}
+  main{background:#fff;padding:12px;border-radius:8px;display:flex;flex-direction:column}
+  .messages{flex:1;overflow:auto;margin-bottom:12px}
+  .msg{padding:8px;border-radius:8px;margin:6px 0;max-width:70%}
+  .mine{background:#dcf8c6;align-self:flex-end}
+  .other{background:#f1f0f0;align-self:flex-start}
+  form{display:flex;gap:8px}
+  input[type=text]{flex:1;padding:8px;border-radius:8px;border:1px solid #ccc}
+  button{padding:8px 12px;border-radius:8px;border:none;background:#2b6cb0;color:#fff}
+  @media (max-width:720px){ .app{grid-template-columns:1fr; } aside{order:2} main{order:1} }
+</style>
 </head>
 <body>
-  <header class="top">
-    <h1>Chat P2P Efímero</h1>
-    <p class="lead">Mensajería 1:1 cifrada P2P, efímera y local. Lee la privacidad antes de usar.</p>
-  </header>
 
-  <main class="container">
-    <section class="panel">
-      <label>Tu nombre: <input id="nick" placeholder="Ej: Juan" /></label>
-      <label>Auto-borrar (seg): <input id="autoDelete" type="number" min="0" value="10" /></label>
-      <label><input id="consentStore" type="checkbox" /> Guardar preferencias/contactos (local)</label>
-      <div class="row">
-        <button id="savePrefs">Guardar preferencias</button>
-        <button id="clearApp">Borrar todo (solo app)</button>
-      </div>
-      <p class="small">Si no aceptas almacenar, la sesión será sólo en memoria.</p>
-    </section>
+<header>
+  <div><strong>  Chat us </strong></div>
+  <div id="userInfo">Cargando...</div>
+</header>
 
-    <section class="panel">
-      <h2>Contactos locales</h2>
-      <div class="row">
-        <input id="contactName" placeholder="Nombre contacto"/>
-        <input id="contactSerial" placeholder="Serial (codigo corto)"/>
-        <button id="addContact">Añadir contacto</button>
-      </div>
-      <div class="row">
-        <button id="exportContacts">Exportar contactos</button>
-        <input id="importContacts" type="file" accept=".json" />
-        <button id="importBtn">Importar contactos</button>
-      </div>
-      <div id="contactsList" class="list"></div>
-    </section>
-
-    <section class="panel">
-      <h2>Señalización (Oferta/Respuesta)</h2>
-      <div class="row">
-        <button id="createOffer">Crear Oferta (soy A)</button>
-        <button id="prepareAnswer">Prepararme para Responder (soy B)</button>
-        <button id="applySignal">Aplicar señal pegada</button>
-        <button id="downloadSignal">Descargar señal</button>
-      </div>
-      <div class="signal-area">
-        <textarea id="signalArea" placeholder="Aquí aparecerá la oferta/respuesta y candidatos"></textarea>
-        <div class="qrbox">
-          <div id="qrcode"></div>
-          <div class="meta">QR de señal</div>
-        </div>
-      </div>
-      <div class="row">
-        <div id="reader" class="reader"></div>
-        <input id="manualSerial" placeholder="Pegar serial o JSON"/>
-        <button id="applyManual">Aplicar</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>Chat efímero</h2>
-      <div id="log" class="log"></div>
-      <div class="row">
-        <input id="msg" placeholder="Escribe tu mensaje..." />
-        <button id="send">Enviar</button>
-      </div>
-      <p class="meta small">Aviso: la app borra localmente mensajes según el temporizador, pero no puede impedir capturas de pantalla.</p>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <small>Proyecto P2P efímero • No guarda mensajes en servidores • Lee <a href="PRIVACY.md" target="_blank">Privacidad</a></small>
-  </footer>
-
-  <div id="consentBanner" class="consent">
+<div class="app">
+  <aside>
+    <h4>Mi Perfil</h4>
     <div>
-      <strong>Aviso de privacidad y cookies</strong>
-      <p>Este chat usa conexión directa entre navegadores. No guardamos mensajes en servidores. ¿Aceptas que guardemos preferencias y contactos en tu dispositivo local?</p>
-      <div class="row">
-        <button id="acceptCookies">Aceptar (guardar)</button>
-        <button id="rejectCookies">Rechazar (no guardar)</button>
-      </div>
+      <label>Usuario</label>
+      <input id="username" type="text" placeholder="elige un nombre"/>
+      <button id="saveUser">Guardar</button>
     </div>
-  </div>
+    <hr/>
+    <h4>Contactos / Salas</h4>
+    <ul id="roomsList">
+      <li><button data-room="global">Global</button></li>
+    </ul>
+  </aside>
 
-<script src="script.js"></script>
+  <main>
+    <div class="messages" id="messages"></div>
+
+    <form id="sendForm">
+      <input id="msgInput" type="text" placeholder="Escribe un mensaje..." autocomplete="off"/>
+      <button type="submit">Enviar</button>
+    </form>
+  </main>
+</div>
+
+<!-- supabase-js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+<script>
+  // CONFIG: pega tus credenciales
+  const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
+  const SUPABASE_ANON_KEY = 'TU-ANON-KEY';
+
+  const supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // util: generar device id corto
+  function genDeviceId() {
+    return 'd-' + Math.random().toString(36).slice(2,10);
+  }
+
+  // estado local
+  let state = {
+    device_id: localStorage.getItem('device_id') || null,
+    profile_id: localStorage.getItem('profile_id') || null,
+    username: localStorage.getItem('username') || null,
+    room: 'global'
+  };
+
+  // init
+  (async function init(){
+    // si no hay device_id la creamos y guardamos
+    if(!state.device_id){
+      state.device_id = genDeviceId();
+      localStorage.setItem('device_id', state.device_id);
+    }
+
+    // Intentamos crear/recuperar una sesión anónima en Supabase (recomendado)
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) console.warn('Anon signIn error', error);
+      // data.user.id -> supabase_user_id si lo quieres guardar
+    } catch(e) {
+      console.warn('signInAnonymously fallo', e);
+    }
+
+    // sincronizamos el perfil en la tabla (upsert)
+    if(!state.profile_id){
+      // intentamos buscar por device_id
+      const { data: existing } = await supabase.from('profiles').select('*').eq('device_id', state.device_id).limit(1);
+      if(existing && existing.length){
+        state.profile_id = existing[0].id;
+        state.username = existing[0].username || state.username;
+        localStorage.setItem('profile_id', state.profile_id);
+      } else {
+        // crear perfil temporal (username vacío hasta que lo ponga)
+        const res = await supabase.from('profiles').insert({
+          device_id: state.device_id,
+          username: state.username || null
+        }).select().single();
+        if(res.error) console.warn(res.error);
+        else {
+          state.profile_id = res.data.id;
+          localStorage.setItem('profile_id', state.profile_id);
+        }
+      }
+    }
+
+    // UI init
+    document.getElementById('username').value = state.username || '';
+    document.getElementById('userInfo').innerText = (state.username || 'Desconocido') + ' · ' + state.device_id;
+
+    // cargar últimos mensajes
+    await loadMessages();
+
+    // suscribirse a nuevos mensajes (INSERT)
+    subscribeMessages();
+
+  })();
+
+  // cargar últimos mensajes
+  async function loadMessages(){
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('room_id', state.room)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    if(error) { console.warn(error); return; }
+    const cont = document.getElementById('messages');
+    cont.innerHTML = '';
+    data.forEach(renderMessage);
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  // render mensaje
+  function renderMessage(m){
+    const cont = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'msg ' + (m.sender_device_id === state.device_id ? 'mine' : 'other');
+    const name = document.createElement('div');
+    name.style.fontSize='12px'; name.style.opacity='0.8';
+    name.innerText = m.sender_display || (m.sender_device_id || 'anónimo');
+    const body = document.createElement('div');
+    body.innerText = m.content;
+    div.appendChild(name); div.appendChild(body);
+    cont.appendChild(div);
+  }
+
+  // enviar mensaje -> insert en tabla
+  document.getElementById('sendForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = document.getElementById('msgInput').value.trim();
+    if(!text) return;
+    const payload = {
+      room_id: state.room,
+      sender_profile_id: state.profile_id,
+      sender_device_id: state.device_id,
+      sender_display: state.username || ('user-' + state.device_id.slice(-4)),
+      content: text
+    };
+    // insertar mensaje
+    const { data, error } = await supabase.from('messages').insert(payload);
+    if(error) console.warn('insert error', error);
+    else {
+      document.getElementById('msgInput').value = '';
+      // el insert disparará la suscripción y se mostrará
+    }
+  });
+
+  // suscripción a INSERTs en messages
+  function subscribeMessages(){
+    // Versión simple (API clásica)
+    supabase
+      .from('messages:room_id=eq.' + state.room)
+      .on('INSERT', payload => {
+        renderMessage(payload.new);
+        const cont = document.getElementById('messages');
+        cont.scrollTop = cont.scrollHeight;
+      })
+      .subscribe()
+      .catch(err => console.warn('subscribe err', err));
+  }
+
+  // guardar username / upsert en profile
+  document.getElementById('saveUser').addEventListener('click', async () => {
+    const val = document.getElementById('username').value.trim();
+    if(!val) return alert('Pon un nombre');
+    state.username = val;
+    localStorage.setItem('username', val);
+    document.getElementById('userInfo').innerText = val + ' · ' + state.device_id;
+
+    await supabase.from('profiles').upsert({
+      id: state.profile_id,
+      device_id: state.device_id,
+      username: val
+    });
+    alert('Guardado');
+  });
+
+</script>
 </body>
 </html>
