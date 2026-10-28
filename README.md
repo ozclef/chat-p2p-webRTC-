@@ -7,6 +7,12 @@
  
  siempre que expliques su estado y no expongas secretos ni datos privados.
 
+
+<img width="966" height="546" alt="image" src="https://github.com/user-attachments/assets/63637af3-facf-4e09-8953-dbbafa8776f2" />
+
+
+-------
+
 ## Primero: ¿cómo se relacionaban todos esos chats?
 
 [Chat messages on computer, laptop pc with chatting bubble notifications, concept of people messaging on internet. Vector illustrations.](https://images.openai.com/static-rsc-4/teC2HzQYp2HmW-6mv_D_6ueydPIKXWm0jxasY8nPmq5ttmkXdF6gb-hZG-DHNoeNC72i7WkPnDTqH1KO6uXMzN34k0LXpIEil3GClCHbVXOeU0FqlCB4O_YiAvNhOm6jUqfbSevYpfUF0lkIANenHaISo6RSNh8bf-MC0UD1JUDnO1jRwqrFPzA7_BcTvLeS?purpose=inline)
